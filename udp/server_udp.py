@@ -8,8 +8,8 @@ CHANNELS = 2
 RATE = 44100
 
 # 网络设置
-SERVER_HOST = '192.168.1.8'  # 服务端IP地址
-SERVER_PORT = 12345
+HOST = '192.168.1.8'  # 服务端IP地址
+PORT = 12345
 
 def audio_stream():
     p = pyaudio.PyAudio()
@@ -18,7 +18,7 @@ def audio_stream():
     stream = p.open(format=FORMAT,
                     channels=CHANNELS,
                     rate=RATE,
-                    input=True,
+                    output=True,
                     frames_per_buffer=CHUNK)
 
     return p, stream
@@ -26,23 +26,23 @@ def audio_stream():
 def main():
     p, stream = audio_stream()
     
-    # 创建socket连接
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((SERVER_HOST, SERVER_PORT))
+    # 创建UDP socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind((HOST, PORT))
     
-    print(f"已连接到服务器 {SERVER_HOST}:{SERVER_PORT}")
+    print(f"服务器正在监听 {HOST}:{PORT}")
 
     try:
         while True:
-            data = stream.read(CHUNK)
-            client_socket.sendall(data)
+            data, addr = server_socket.recvfrom(CHUNK * 4)  # 增大缓冲区以适应可能的较大数据包
+            stream.write(data)
     except KeyboardInterrupt:
-        print("客户端正在关闭...")
+        print("服务器正在关闭...")
     finally:
         stream.stop_stream()
         stream.close()
         p.terminate()
-        client_socket.close()
+        server_socket.close()
 
 if __name__ == "__main__":
     main()
