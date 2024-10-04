@@ -3,6 +3,7 @@ import socket
 import numpy as np
 from scipy import signal
 import webrtcvad
+import json
 
 # 音频参数
 CHUNK = 960  # 60ms at 16kHz, 增加以适应可能的较大数据包
@@ -10,9 +11,23 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 
-# 网络设置
-HOST = '192.168.1.8'  # 服务端IP地址
-PORT = 12345
+# 从配置文件读取网络设置
+def load_config():
+    try:
+        with open('configure.json', 'r') as config_file:
+            config = json.load(config_file)
+            return config['HOST'], config['PORT']
+    except FileNotFoundError:
+        print("配置文件 'configure.json' 未找到。使用默认设置。")
+        return '127.0.0.1', 12345
+    except json.JSONDecodeError:
+        print("配置文件格式错误。使用默认设置。")
+        return '127.0.0.1', 12345
+    except KeyError:
+        print("配置文件缺少必要的键。使用默认设置。")
+        return '127.0.0.1', 12345
+
+HOST, PORT = load_config()
 
 vad = webrtcvad.Vad(3)  # 设置 VAD 的攻击性 (0-3)
 

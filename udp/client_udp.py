@@ -1,5 +1,6 @@
 import pyaudio
 import socket
+import json
 
 # 音频参数
 CHUNK = 1024
@@ -7,9 +8,23 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 2
 RATE = 44100
 
-# 网络设置
-SERVER_HOST = '192.168.1.8'  # 服务端IP地址
-SERVER_PORT = 12345
+# 从配置文件读取网络设置
+def load_config():
+    try:
+        with open('configure.json', 'r') as config_file:
+            config = json.load(config_file)
+            return config['SERVER_HOST'], config['SERVER_PORT']
+    except FileNotFoundError:
+        print("配置文件 'configure.json' 未找到。使用默认设置。")
+        return '127.0.0.1', 12345
+    except json.JSONDecodeError:
+        print("配置文件格式错误。使用默认设置。")
+        return '127.0.0.1', 12345
+    except KeyError:
+        print("配置文件缺少必要的键。使用默认设置。")
+        return '127.0.0.1', 12345
+
+SERVER_HOST, SERVER_PORT = load_config()
 
 def audio_stream():
     p = pyaudio.PyAudio()
