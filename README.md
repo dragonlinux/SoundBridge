@@ -6,4 +6,6 @@ pip3 install PyQt5 pyaudio webrtcvad-wheels numpy scipy -i https://pypi.tuna.tsi
 
 ## tested
 Windows 10、11
-Python 3.12.7
+
+## Python
+3.12.7
